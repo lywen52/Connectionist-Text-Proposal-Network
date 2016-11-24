@@ -21,7 +21,7 @@ def pop_layer(model):
 
 def VGG_16(weights_path=None):
     model = Sequential()
-    model.add(ZeroPadding2D((1,1),input_shape=(3,400,400)))
+    model.add(ZeroPadding2D((1,1),input_shape=(3,224,224)))
     model.add(Convolution2D(64, 3, 3, activation='relu'))
     model.add(ZeroPadding2D((1,1)))
     model.add(Convolution2D(64, 3, 3, activation='relu'))
@@ -70,7 +70,7 @@ def VGG_16(weights_path=None):
     return model
 
 if __name__ == "__main__":
-    im = cv2.resize(cv2.imread('cat.png'), (400, 400)).astype(np.float32)
+    im = cv2.resize(cv2.imread('cat.png'), (224, 224)).astype(np.float32)
 
     im[:,:,0] -= 103.939
     im[:,:,1] -= 116.779
@@ -89,6 +89,10 @@ if __name__ == "__main__":
     out = out[0]
     out = np.swapaxes(out, 0,1)
     out = np.swapaxes(out, 1,2)
-
+    out = out/np.amax(out)
+    out2 = out*256
+    cv2.imwrite("vis.jpg", out2)
+    cv2.imshow("vis", out)
+    cv2.waitKey(0)
     print out.shape
-
+    print np.argmax(out)
