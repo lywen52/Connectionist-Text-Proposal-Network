@@ -12,7 +12,9 @@ class box:
         self.right=int(data[2])
         self.bottom=int(data[3])
         self.word=data[4]
-    
+    def print_box(self):
+        print "Left: ", self.left, " Top: ", self.top," Right: ", self.right, " Bottom: ", self.bottom
+        print "Word = ", self.word
 class image_data: 
     def __init__(self, path):
         self.rectangles=[]
@@ -72,7 +74,8 @@ class image_data:
             words = line.split()
             self.rectangles.append(box(words))
         if self.debug:
-            print len(self.rectangles)
+            for r in self.rectangles:
+                r.print_box()
                 
         
 
