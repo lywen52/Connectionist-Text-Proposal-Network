@@ -6,24 +6,21 @@ import vgg16
 import tensorflow as tf
 
 
-# synset = [l.strip() for l in open('synset.txt').readlines()]
-
-
-# returns image of shape [224, 224, 3]
-# [height, width, depth]
-
 class image_data: 
     def __init__(self, path):
-
+        self.path = path
+        self.debug = True
+        self.features = None
         self.orignal_image = self.load_image(path)
         self.image=self.resize_image(self.orignal_image)
-        self.data = self.expand_dims(self.image)
+
         self.scale = float(self.image.shape[0])/float(self.orignal_image.shape[0])
 
-        print "Oringal Image " , self.orignal_  bimage.shape
-        print "Resized Image" , self.image.shape
-
-        print "Scale = " , self.scale
+        if debug:
+            print "Oringal Image " , self.orignal_image.shape
+            print "Resized Image" , self.image.shape
+            
+            print "Scale = " , self.scale
 
     def resize_image(self, img):
         if(img.shape[0] < img.shape[1]):
@@ -32,12 +29,31 @@ class image_data:
             image = skimage.transform.resize(img, (int(600.0/img.shape[1]*img.shape[0]),600,3))
         return image
 
-    def expand_dims(self,img):
-        return np.expand_dims(img,axis=0)
+    
+    def load_features(self):
+         """
+        Loads features of the image from the same path as image. Features must be pre-computed by calling the compute_features() function on the directory
+
+
+        Side Affects
+        ------------
+        Features are loaded in self.features. 
+        """
+        import os.path
+        if os.path.isfile(self.path+".npy"):
+            self.features = np.load(self.path+".npy")
+            if self.debug:
+                print "Features Loaded. Shape = ", self.features.shape
+        else:
+            print "Please compute features of the images first using compute_features() before running this"
+            
+            
+    def load_gt(self):
+        pass
 
 
     def load_image(self,path):
-        # load image
+
         img = skimage.io.imread(path)
         img = img / 255.0
         assert (0 <= img).all() and (img <= 1.0).all()
@@ -87,7 +103,8 @@ def compute_features(path, network = "VGG16", extension = "jpg"):
             for file in os.listdir(path):
                 if file.endswith(extension):
                     print(file)
-                    img = image_data(path+"/"+file).data
+                    img = image_data(path+"/"+file).image
+                    img = np.expand_dims(img,axis=0)
                     #img =  load_image(path+"/"+file)
                     print img.shape
                     feed_dict = {images: img}
@@ -102,7 +119,9 @@ def compute_features(path, network = "VGG16", extension = "jpg"):
 def test():
     print "Testing"
 
-    compute_features("./Train_Images")
+    #compute_features("./Train_Images")
+    myImage = image_data("./Train_Images/101.jpg")
+    myImage.load_features()
 
 if __name__ == "__main__":
     test()
