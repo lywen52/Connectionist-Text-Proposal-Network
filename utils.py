@@ -5,6 +5,9 @@ import numpy as np
 import vgg16
 import tensorflow as tf
 
+class box:
+    class __init__(self, left,top,right, bottom):
+        
 
 class image_data: 
     def __init__(self, path):
@@ -49,6 +52,13 @@ class image_data:
             
             
     def load_gt(self):
+         """
+         First renamed gt files from gt_100.txt to 100.jpg.gt. 
+         Used rename -v -n 's/gt_//' *.txt 
+         Followed by rename -v -n 's/.txt/.jpg.gt/' *.txt
+
+         Then use this function to store GTs into a list of boxes
+        """
         pass
 
 
