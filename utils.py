@@ -6,11 +6,17 @@ import vgg16
 import tensorflow as tf
 
 class box:
-    class __init__(self, left,top,right, bottom):
-        
-
+    def __init__(self, data):
+        self.left=int(data[0])
+        self.top=int(data[1])
+        self.right=int(data[2])
+        self.bottom=int(data[3])
+        self.word=data[4]
+    
 class image_data: 
     def __init__(self, path):
+        self.rectangles=[]
+
         self.path = path
         self.debug = True
         self.features = None
@@ -19,7 +25,7 @@ class image_data:
 
         self.scale = float(self.image.shape[0])/float(self.orignal_image.shape[0])
 
-        if debug:
+        if self.debug:
             print "Oringal Image " , self.orignal_image.shape
             print "Resized Image" , self.image.shape
             
@@ -34,7 +40,7 @@ class image_data:
 
     
     def load_features(self):
-         """
+        """
         Loads features of the image from the same path as image. Features must be pre-computed by calling the compute_features() function on the directory
 
 
@@ -47,19 +53,29 @@ class image_data:
             self.features = np.load(self.path+".npy")
             if self.debug:
                 print "Features Loaded. Shape = ", self.features.shape
-        else:
-            print "Please compute features of the images first using compute_features() before running this"
+            else:
+                print "Please compute features of the images first using compute_features() before running this"
             
             
     def load_gt(self):
-         """
-         First renamed gt files from gt_100.txt to 100.jpg.gt. 
-         Used rename -v -n 's/gt_//' *.txt 
-         Followed by rename -v -n 's/.txt/.jpg.gt/' *.txt
-
-         Then use this function to store GTs into a list of boxes
         """
-        pass
+        First renamed gt files from gt_100.txt to 100.jpg.gt. 
+        Used rename -v -n 's/gt_//' *.txt 
+        Followed by rename -v -n 's/.txt/.jpg.gt/' *.txt
+
+        Then use this function to store GTs into a list of boxes
+
+        GT Format :each line represents : left top right bottom "Text" (ICDAR 2015 localization challegent format) 
+        """
+        self.lines = tuple(open(self.path+".gt", 'r'))
+        for line in self.lines:
+            words = line.split()
+            self.rectangles.append(box(words))
+        if self.debug:
+            print len(self.rectangles)
+                
+        
+
 
 
     def load_image(self,path):
@@ -130,8 +146,9 @@ def test():
     print "Testing"
 
     #compute_features("./Train_Images")
-    myImage = image_data("./Train_Images/101.jpg")
+    myImage = image_data("./Train_Images/102.jpg")
     myImage.load_features()
+    myImage.load_gt()
 
 if __name__ == "__main__":
     test()
