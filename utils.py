@@ -6,15 +6,31 @@ import vgg16
 import tensorflow as tf
 
 class box:
-    def __init__(self, data):
-        self.left=int(data[0])
-        self.top=int(data[1])
-        self.right=int(data[2])
-        self.bottom=int(data[3])
+    """
+    Class to store the SCALED bounding boxes information
+    """
+    def __init__(self, data, scale=1):
+        self.left=int(int(data[0])*scale)
+        self.top=int(int(data[1])*scale)
+        self.right=int(int(data[2])*scale)
+        self.bottom=int(int(data[3])*scale)
+        self.height= abs(self.top-self.bottom)
+        self.width = abs(self.right - self.left)
+
         self.word=data[4]
-    def print_box(self):
-        print "Left: ", self.left, " Top: ", self.top," Right: ", self.right, " Bottom: ", self.bottom
-        print "Word = ", self.word
+
+    def draw_box(self,img):
+        """Draw the rectangle on the image passed to the function"""
+        import cv2
+        img = myImage.image
+        img = img*256
+        cv2.rectangle(img,(self.left,self.top),(self.right,self.bottom),(0,255,0),3)
+        return img
+
+    def __str__(self):
+        """For printing a Box attributes"""
+        
+        return "Left: "+ str(self.left)+ " Top: "+ str(self.top)+" Right: "+ str(self.right)+ " Bottom: "+ str(self.bottom) + " Word = "+ str(self.word)
 class image_data: 
     def __init__(self, path):
         self.rectangles=[]
@@ -72,10 +88,11 @@ class image_data:
         self.lines = tuple(open(self.path+".gt", 'r'))
         for line in self.lines:
             words = line.split()
-            self.rectangles.append(box(words))
+            self.rectangles.append(box(words,self.scale))
         if self.debug:
+            print "Loaded GT"
             for r in self.rectangles:
-                r.print_box()
+                print r
                 
         
 
@@ -153,5 +170,12 @@ def test():
     myImage.load_features()
     myImage.load_gt()
 
+    import cv2
+    img = myImage.image
+    img = img*256
+    for rec in myImage.rectangles:
+        cv2.rectangle(img,(rec.left,rec.top),(rec.right,rec.bottom),(0,255,0),3)
+    
+    cv2.imwrite("result.jpg",img)
 if __name__ == "__main__":
     test()
