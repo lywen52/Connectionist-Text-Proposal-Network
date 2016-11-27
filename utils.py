@@ -62,7 +62,7 @@ class image_data:
         """
         Returns the resized image from the HARDDRIVE. Slow inside a loop
         """
-        return self.resize_image(self.load_image(path))
+        return self.resize_image(self.load_image())
     def load_features(self):
         """
         Loads features of the image from the same path as image. Features must be pre-computed by calling the compute_features() function on the directory
@@ -103,9 +103,9 @@ class image_data:
 
     
 
-    def load_image(self,path):
+    def load_image(self):
 
-        img = skimage.io.imread(path)
+        img = skimage.io.imread(self.path)
         img = img / 255.0
         assert (0 <= img).all() and (img <= 1.0).all()
 
