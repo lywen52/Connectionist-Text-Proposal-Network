@@ -10,6 +10,7 @@ class box:
     Class to store the SCALED bounding boxes information
     """
     def __init__(self, data, scale=1):
+       
         self.left=int(int(data[0])*scale)
         self.top=int(int(data[1])*scale)
         self.right=int(int(data[2])*scale)
@@ -34,20 +35,21 @@ class box:
 class image_data: 
     def __init__(self, path):
         self.rectangles=[]
-
+        self.rolling_windows=None
         self.path = path
-        self.debug = True
+        self.debug = False
         self.features = None
-        self.orignal_image = self.load_image(path)
-        self.image=self.resize_image(self.orignal_image)
+        orignal_image = self.load_image(path)
+        self.image=self.resize_image(orignal_image)
 
-        self.scale = float(self.image.shape[0])/float(self.orignal_image.shape[0])
+        self.scale = float(self.image.shape[0])/float(orignal_image.shape[0])
 
         if self.debug:
-            print "Oringal Image " , self.orignal_image.shape
+            print "Oringal Image " , orignal_image.shape
             print "Resized Image" , self.image.shape
             
             print "Scale = " , self.scale
+        self.image=None
 
     def resize_image(self, img):
         if(img.shape[0] < img.shape[1]):
@@ -71,8 +73,7 @@ class image_data:
             self.features = np.load(self.path+".npy")
             if self.debug:
                 print "Features Loaded. Shape = ", self.features.shape
-            else:
-                print "Please compute features of the images first using compute_features() before running this"
+           
             
             
     def load_gt(self):
@@ -96,7 +97,7 @@ class image_data:
                 
         
 
-
+    
 
     def load_image(self,path):
 
@@ -106,7 +107,29 @@ class image_data:
 
         return img
 
+    def sliding_window(self, mode='edge'):
+        import skimage
 
+        array =self.features
+        array_padded = np.pad(array,((1,1),(1,1),(0,0)), mode=mode)
+        out = skimage.util.view_as_windows(array_padded, (3,3,512), step=1)
+        self.rolling_windows=out
+        return out
+
+
+
+def load_images(path, extension = "jpg"):
+        data = []
+        import os
+        for file in os.listdir(path):
+            if file.endswith(extension):
+                print(file)
+                img = image_data(path+"/"+file)
+                img.load_gt()
+                img.load_features()
+                img.sliding_window()
+                data.append(img)
+        return data
 
 def compute_features(path, network = "VGG16", extension = "jpg"):
     
@@ -157,7 +180,7 @@ def compute_features(path, network = "VGG16", extension = "jpg"):
 
                     features = sess.run(vgg.conv5_3, feed_dict=feed_dict)
                     print features[0].shape
-                    #np.save(path+"/"+file, features[0])
+                    np.save(path+"/"+file, features[0])
 
     else:
         print ("Implement functionality of your desired model")
@@ -167,6 +190,8 @@ def test():
 
     #compute_features("./Train_Images")
     myImage = image_data("./Train_Images/102.jpg")
+    numpy_data = np.load("./Train_Images/102.jpg.npy")
+    print numpy_data.shape
     myImage.load_features()
     myImage.load_gt()
 
@@ -177,5 +202,11 @@ def test():
         cv2.rectangle(img,(rec.left,rec.top),(rec.right,rec.bottom),(0,255,0),3)
     
     cv2.imwrite("result.jpg",img)
+
+
+
+
+
+
 if __name__ == "__main__":
     test()
