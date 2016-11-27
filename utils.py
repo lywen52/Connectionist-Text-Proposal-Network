@@ -58,7 +58,11 @@ class image_data:
             image = skimage.transform.resize(img, (int(600.0/img.shape[1]*img.shape[0]),600,3))
         return image
 
-    
+    def load_scaled_image(self):
+        """
+        Returns the resized image from the HARDDRIVE. Slow inside a loop
+        """
+        return self.resize_image(self.load_image(path))
     def load_features(self):
         """
         Loads features of the image from the same path as image. Features must be pre-computed by calling the compute_features() function on the directory
